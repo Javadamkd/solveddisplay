@@ -1,0 +1,16 @@
+services:
+  - type: static_site
+    name: result-display-frontend
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+    autoDeploy: true
+
+  - type: web
+    name: result-display-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    autoDeploy: true
