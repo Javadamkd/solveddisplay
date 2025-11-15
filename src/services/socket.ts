@@ -11,6 +11,9 @@ export function initViewerSocket(
   if (!enableWs || !wsUrl) return null;
 
   const ws = new WebSocket(wsUrl);
+  ws.onopen = () => {
+    console.log('[WS] connected to', wsUrl);
+  };
   ws.onmessage = (evt) => {
     try {
       const msg = JSON.parse(evt.data);
@@ -24,7 +27,7 @@ export function initViewerSocket(
     }
   };
 
-  ws.onerror = (e) => console.warn('WS error (non-blocking)', e);
+  ws.onerror = (e) => console.warn('[WS] error (non-blocking)', e);
   ws.onclose = () => console.log('WS closed');
 
   return () => {

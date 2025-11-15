@@ -66,12 +66,14 @@ manager = ConnectionManager()
 async def ws_endpoint(ws: WebSocket):
     await manager.connect(ws)
     try:
+        print("[backend] WS client connected")
         while True:
             # We don't expect messages from clients; just keep the connection open.
             # Read and ignore any incoming messages to keep the loop alive.
             await ws.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(ws)
+        print("[backend] WS client disconnected")
 
 @app.get("/programs")
 def list_programs():
@@ -91,6 +93,7 @@ def announce(payload: dict):
     # Two shapes are supported:
     # 1) { program_name, section } -> DISPLAY_PROGRAM
     # 2) { program_name, section, result } -> DISPLAY_RESULT
+    print("[backend] /announce", payload)
     msg_type = "DISPLAY_RESULT" if payload.get("result") is not None else "DISPLAY_PROGRAM"
     broadcast_payload = {
         "program_name": payload.get("program_name"),
@@ -102,5 +105,6 @@ def announce(payload: dict):
     # Fire-and-forget broadcast; run in the event loop
     import anyio
     anyio.from_thread.run(manager.broadcast_json, {"type": msg_type, "payload": broadcast_payload})
+    print("[backend] broadcast", {"type": msg_type, "payload": broadcast_payload})
 
     return {"status": "ok"}
